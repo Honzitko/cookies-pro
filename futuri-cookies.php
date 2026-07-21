@@ -2,7 +2,7 @@
 /**
  * Plugin Name:       futuri Cookies
  * Plugin URI:        https://futuri.cz
- * Description:        Plně samostatná, GDPR-friendly cookie lišta pro futuri.cz. Granulární souhlasy, blokování skriptů před souhlasem, Google Consent Mode v2, záznamy souhlasů a kompletní vizuální přizpůsobení — vše zdarma a pod vaší kontrolou.
+ * Description:        Plně samostatná, GDPR-friendly cookie lišta pro futuri.cz. Granulární souhlasy, blokování spravovaných a označených skriptů před souhlasem, Google Consent Mode v2, záznamy souhlasů a kompletní vizuální přizpůsobení — vše zdarma a pod vaší kontrolou.
  * Version:           1.0.0
  * Author:            futuri
  * Text Domain:       futuri-cookies
