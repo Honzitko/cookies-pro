@@ -57,6 +57,7 @@ function futuri_cookies_save() {
 	// Čísla
 	$out['expiry'] = isset( $in['expiry'] ) ? max( 1, min( 3650, intval( $in['expiry'] ) ) ) : 365;
 	$out['radius'] = isset( $in['radius'] ) ? max( 0, min( 40, intval( $in['radius'] ) ) ) : 16;
+	$out['log_retention_days'] = isset( $in['log_retention_days'] ) ? max( 1, min( 3650, intval( $in['log_retention_days'] ) ) ) : $def['log_retention_days'];
 
 	// URL
 	$out['privacy_url'] = isset( $in['privacy_url'] ) ? esc_url_raw( $in['privacy_url'] ) : '';
@@ -205,7 +206,11 @@ function futuri_cookies_settings_page() {
 					</tr>
 					<tr>
 						<th>Záznamy souhlasů</th>
-						<td><label><input type="checkbox" name="log_consents" value="1" <?php checked( $o['log_consents'] ); ?>> Ukládat záznamy souhlasů (s anonymizovanou IP) — viz záložka Záznamy</label></td>
+						<td>
+							<label><input type="checkbox" name="log_consents" value="1" <?php checked( $o['log_consents'] ); ?>> Ukládat záznamy souhlasů (s anonymizovanou IP) — viz záložka Záznamy</label>
+							<p><label>Automaticky mazat po <input type="number" name="log_retention_days" value="<?php echo esc_attr( $o['log_retention_days'] ); ?>" min="1" max="3650" class="small-text"> dnech</label></p>
+							<p class="description">Záznamy se mažou při denní plánované údržbě. Export není náhradou této retenční politiky.</p>
+						</td>
 					</tr>
 					<tr>
 						<th>Plovoucí tlačítko</th>

@@ -33,6 +33,13 @@
 			';expires=' + d.toUTCString() + ';path=/;SameSite=Lax' + secure;
 	}
 
+	function isValidConsent(state) {
+		return !!state && typeof state === 'object' && !Array.isArray(state) &&
+			state.v === (CFG.version || '1') && state.necessary === true &&
+			typeof state.functional === 'boolean' && typeof state.analytics === 'boolean' &&
+			typeof state.marketing === 'boolean';
+	}
+
 	/* ---------------- Google Consent Mode v2 ---------------- */
 	function updateConsentMode(state) {
 		if (!CFG.consentMode || typeof window.gtag !== 'function') return;
@@ -242,7 +249,7 @@
 		}
 
 		var saved = readConsent();
-		var validVersion = saved && saved.v === (CFG.version || '1');
+		var validVersion = isValidConsent(saved);
 
 		if (validVersion) {
 			// Vrátivší se návštěvník — aplikujeme uložený souhlas, lištu neukazujeme.

@@ -34,7 +34,7 @@ function consentCookie(value) {
 	return 'futuri_cookie_consent=' + encodeURIComponent(JSON.stringify(value));
 }
 
-const valid = updatesFor(consentCookie({ v: '1.0.0', analytics: true, marketing: true, functional: true }));
+const valid = updatesFor(consentCookie({ v: '1.0.0', necessary: true, analytics: true, marketing: true, functional: true }));
 assert.equal(valid.length, 1, 'A current valid cookie must restore Consent Mode.');
 assert.equal(valid[0][2].analytics_storage, 'granted');
 assert.equal(valid[0][2].ad_storage, 'granted');
@@ -44,6 +44,10 @@ assert.equal(updatesFor(consentCookie({ analytics: true, marketing: true, functi
 	'A cookie without a version must not restore old consent.');
 assert.equal(updatesFor(consentCookie({ v: '0.9.0', analytics: true, marketing: true, functional: true })).length, 0,
 	'A cookie from an older version must not restore old consent.');
+assert.equal(updatesFor(consentCookie({ v: '1.0.0', necessary: true, analytics: true, marketing: true, functional: 'true' })).length, 0,
+	'A cookie with a non-boolean category must not restore consent.');
+assert.equal(updatesFor(consentCookie({ v: '1.0.0', necessary: false, analytics: true, marketing: true, functional: true })).length, 0,
+	'A cookie without necessary consent must not restore consent.');
 assert.equal(updatesFor('futuri_cookie_consent=%7Bnot-json').length, 0,
 	'Invalid JSON must be ignored without throwing.');
 

@@ -17,7 +17,8 @@ plná kontrola, žádné externí závislosti a žádné "Powered by".
 * Google Consent Mode v2 — výchozí stav „denied“ a po volbě automatická
   aktualizace stavu souhlasu pro Google tagy (GA4 a Google Ads); nejde o
   univerzální blokátor libovolných externích skriptů
-* Záznamy souhlasů do databáze s anonymizovanou IP + export do CSV
+* Záznamy souhlasů do databáze s anonymizovanou IP + export do CSV a
+  nastavitelná automatická retence (výchozí doba 365 dní)
 * Kompletní vizuální přizpůsobení (barvy, texty, kategorie, pozice, rozvržení)
 * Plovoucí tlačítko + shortcode pro znovuotevření nastavení
 * Bez načítání Google Fonts z CDN — plugin sám neodesílá data návštěvníka ven
