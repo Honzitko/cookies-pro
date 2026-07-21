@@ -122,18 +122,27 @@ function futuri_cookies_create_log_table() {
 }
 
 /* ------------------------------------------------------------------------- *
- *  Anonymizace IP (poslední oktet u IPv4 / posledních 80 bitů u IPv6)
+ *  Anonymizace IP (posledních 8 bitů u IPv4 / posledních 80 bitů u IPv6)
  * ------------------------------------------------------------------------- */
 function futuri_cookies_anonymize_ip( $ip ) {
-	if ( false !== strpos( $ip, ':' ) ) {
-		$parts = explode( ':', $ip );
-		return implode( ':', array_slice( $parts, 0, 4 ) ) . '::';
+	if ( ! is_string( $ip ) ) {
+		return '0.0.0.0';
 	}
-	$parts = explode( '.', $ip );
-	if ( 4 === count( $parts ) ) {
-		$parts[3] = '0';
-		return implode( '.', $parts );
+
+	$packed_ip = inet_pton( $ip );
+	if ( false === $packed_ip ) {
+		return '0.0.0.0';
 	}
+
+	if ( 4 === strlen( $packed_ip ) ) {
+		return inet_ntop( substr( $packed_ip, 0, 3 ) . "\0" );
+	}
+
+	if ( 16 === strlen( $packed_ip ) ) {
+		// Zachová prvních 48 bitů sítě a vynuluje posledních 80 bitů hosta.
+		return inet_ntop( substr( $packed_ip, 0, 6 ) . str_repeat( "\0", 10 ) );
+	}
+
 	return '0.0.0.0';
 }
 
