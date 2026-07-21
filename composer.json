@@ -12,6 +12,6 @@
       "@test:js"
     ],
     "test:php": "phpunit --configuration phpunit.xml.dist",
-    "test:js": "node tests/consent-mode-cookie-validation.test.js"
+    "test:js": "node tests/consent-mode-cookie-validation.test.js && node tests/modal-accessibility.test.js"
   }
 }

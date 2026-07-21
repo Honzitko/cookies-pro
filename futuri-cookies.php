@@ -381,7 +381,7 @@ function futuri_cookies_footer() {
 		</div>
 	</div>
 
-	<div id="fc-prefs" class="fc-prefs" role="dialog" aria-modal="true" aria-label="<?php echo esc_attr( $o['prefs_title'] ); ?>" hidden>
+	<div id="fc-prefs" class="fc-prefs" role="dialog" aria-modal="true" aria-label="<?php echo esc_attr( $o['prefs_title'] ); ?>" tabindex="-1" hidden>
 		<div class="fc-prefs-backdrop" data-fc="close-prefs"></div>
 		<div class="fc-prefs-panel">
 			<button type="button" class="fc-prefs-close" data-fc="close-prefs" aria-label="Zavřít">&times;</button>
