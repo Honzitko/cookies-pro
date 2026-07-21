@@ -323,6 +323,9 @@ function futuri_cookies_footer() {
 			<button type="button" class="fc-prefs-close" data-fc="close-prefs" aria-label="Zavřít">&times;</button>
 			<h2 class="fc-prefs-title"><?php echo esc_html( $o['prefs_title'] ); ?></h2>
 			<p class="fc-prefs-intro"><?php echo esc_html( $o['prefs_intro'] ); ?></p>
+			<?php if ( $privacy ) : ?>
+				<p class="fc-prefs-privacy"><a class="fc-link" href="<?php echo $privacy; ?>"><?php echo esc_html( $o['privacy_label'] ); ?></a></p>
+			<?php endif; ?>
 
 			<div class="fc-cat">
 				<div class="fc-cat-head">
