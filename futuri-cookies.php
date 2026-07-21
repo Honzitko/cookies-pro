@@ -21,6 +21,8 @@ define( 'FUTURI_COOKIES_PATH', plugin_dir_path( __FILE__ ) );
 define( 'FUTURI_COOKIES_URL', plugin_dir_url( __FILE__ ) );
 define( 'FUTURI_COOKIES_OPT', 'futuri_cookies_settings' );
 define( 'FUTURI_COOKIES_COOKIE', 'futuri_cookie_consent' );
+define( 'FUTURI_COOKIES_CONSENT_RATE_LIMIT', 10 );
+define( 'FUTURI_COOKIES_CONSENT_RATE_PERIOD', 3600 );
 
 require_once FUTURI_COOKIES_PATH . 'includes/settings.php';
 
@@ -144,6 +146,68 @@ function futuri_cookies_anonymize_ip( $ip ) {
 	}
 
 	return '0.0.0.0';
+}
+
+/**
+ * Validates and normalizes the consent payload accepted by the public endpoint.
+ *
+ * @param mixed $consent_json JSON received from the AJAX request.
+ * @return string|false Normalized JSON or false when the payload is invalid.
+ */
+function futuri_cookies_normalize_consent( $consent_json ) {
+	if ( ! is_string( $consent_json ) || strlen( $consent_json ) > 1024 ) {
+		return false;
+	}
+
+	$consent    = json_decode( $consent_json, true );
+	$categories = array( 'necessary', 'functional', 'analytics', 'marketing' );
+	if ( JSON_ERROR_NONE !== json_last_error() || ! is_array( $consent ) || count( $consent ) !== count( $categories ) ) {
+		return false;
+	}
+
+	foreach ( $categories as $category ) {
+		if ( ! array_key_exists( $category, $consent ) || ! is_bool( $consent[ $category ] ) ) {
+			return false;
+		}
+	}
+
+	return wp_json_encode(
+		array(
+			'necessary'  => $consent['necessary'],
+			'functional' => $consent['functional'],
+			'analytics'  => $consent['analytics'],
+			'marketing'  => $consent['marketing'],
+		)
+	);
+}
+
+/**
+ * Limits consent-log writes for an anonymized visitor network.
+ *
+ * @param string $anonymized_ip An anonymized IP address.
+ * @return bool Whether another log entry may be written.
+ */
+function futuri_cookies_allow_consent_log( $anonymized_ip ) {
+	$key   = 'futuri_consent_rl_' . hash( 'sha256', $anonymized_ip );
+	$count = (int) get_transient( $key );
+
+	if ( $count >= FUTURI_COOKIES_CONSENT_RATE_LIMIT ) {
+		return false;
+	}
+
+	set_transient( $key, $count + 1, FUTURI_COOKIES_CONSENT_RATE_PERIOD );
+	return true;
+}
+
+/**
+ * Truncates request metadata without splitting a UTF-8 character when possible.
+ *
+ * @param string $value Value to truncate.
+ * @param int    $length Maximum number of characters.
+ * @return string
+ */
+function futuri_cookies_truncate_metadata( $value, $length ) {
+	return function_exists( 'mb_substr' ) ? mb_substr( $value, 0, $length, 'UTF-8' ) : substr( $value, 0, $length );
 }
 
 /* ------------------------------------------------------------------------- *
@@ -397,22 +461,44 @@ function futuri_cookies_log_consent() {
 	global $wpdb;
 	$table = $wpdb->prefix . 'futuri_consent_log';
 
-	$consent = isset( $_POST['consent'] ) ? sanitize_text_field( wp_unslash( $_POST['consent'] ) ) : '';
-	$url     = isset( $_POST['url'] ) ? esc_url_raw( wp_unslash( $_POST['url'] ) ) : '';
-	$ip      = isset( $_SERVER['REMOTE_ADDR'] ) ? futuri_cookies_anonymize_ip( sanitize_text_field( wp_unslash( $_SERVER['REMOTE_ADDR'] ) ) ) : '';
-	$ua      = isset( $_SERVER['HTTP_USER_AGENT'] ) ? substr( sanitize_text_field( wp_unslash( $_SERVER['HTTP_USER_AGENT'] ) ), 0, 255 ) : '';
+	$raw_consent = isset( $_POST['consent'] ) && is_string( $_POST['consent'] ) ? wp_unslash( $_POST['consent'] ) : '';
+	$consent     = futuri_cookies_normalize_consent( $raw_consent );
+	if ( false === $consent ) {
+		wp_send_json_error( array( 'message' => __( 'Neplatná data souhlasu.', 'futuri-cookies' ) ), 400 );
+	}
 
-	$wpdb->insert(
+	$raw_ip = isset( $_SERVER['REMOTE_ADDR'] ) && is_string( $_SERVER['REMOTE_ADDR'] ) ? wp_unslash( $_SERVER['REMOTE_ADDR'] ) : '';
+	$ip     = futuri_cookies_anonymize_ip( sanitize_text_field( $raw_ip ) );
+	if ( ! futuri_cookies_allow_consent_log( $ip ) ) {
+		wp_send_json_error( array( 'message' => __( 'Příliš mnoho požadavků. Zkuste to prosím později.', 'futuri-cookies' ) ), 429 );
+	}
+
+	$raw_url = isset( $_POST['url'] ) && is_string( $_POST['url'] ) ? wp_unslash( $_POST['url'] ) : '';
+	$url     = futuri_cookies_truncate_metadata(
+		esc_url_raw( futuri_cookies_truncate_metadata( $raw_url, 2048 ) ),
+		255
+	);
+	$raw_ua  = isset( $_SERVER['HTTP_USER_AGENT'] ) && is_string( $_SERVER['HTTP_USER_AGENT'] ) ? wp_unslash( $_SERVER['HTTP_USER_AGENT'] ) : '';
+	$ua      = futuri_cookies_truncate_metadata(
+		sanitize_text_field( futuri_cookies_truncate_metadata( $raw_ua, 1024 ) ),
+		255
+	);
+
+	$inserted = $wpdb->insert(
 		$table,
 		array(
 			'created_at' => current_time( 'mysql' ),
 			'ip'         => $ip,
-			'url'        => substr( $url, 0, 255 ),
+			'url'        => $url,
 			'consent'    => $consent,
 			'user_agent' => $ua,
 		),
 		array( '%s', '%s', '%s', '%s', '%s' )
 	);
+	if ( false === $inserted ) {
+		error_log( 'futuri-cookies: Failed to write consent log.' );
+		wp_send_json_error( array( 'message' => __( 'Záznam souhlasu se nepodařilo uložit.', 'futuri-cookies' ) ), 500 );
+	}
 
 	wp_send_json_success();
 }
