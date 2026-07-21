@@ -1,0 +1,17 @@
+{
+  "name": "futuri/cookies",
+  "description": "futuri Cookies WordPress plugin",
+  "type": "wordpress-plugin",
+  "license": "GPL-2.0-or-later",
+  "require-dev": {
+    "phpunit/phpunit": "^9.6"
+  },
+  "scripts": {
+    "test": [
+      "@test:php",
+      "@test:js"
+    ],
+    "test:php": "phpunit --configuration phpunit.xml.dist",
+    "test:js": "node tests/consent-mode-cookie-validation.test.js"
+  }
+}
