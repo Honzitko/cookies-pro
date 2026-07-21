@@ -9,6 +9,10 @@
 	var banner = document.getElementById('fc-banner');
 	var prefs = document.getElementById('fc-prefs');
 	var floatBtn = document.getElementById('fc-float');
+	var prefsOpener = null;
+	var previousDocumentOverflow = '';
+	var inertBackground = [];
+	var focusableSelector = 'a[href], area[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), iframe, object, embed, [contenteditable], [tabindex]:not([tabindex="-1"])';
 
 	/* ---------------- Cookie helpers ---------------- */
 	function readConsent() {
@@ -96,23 +100,60 @@
 	function showBanner() { if (banner) banner.hidden = false; if (floatBtn) floatBtn.hidden = true; }
 	function hideBanner() { if (banner) banner.hidden = true; if (floatBtn) floatBtn.hidden = false; }
 
+	function getPrefsFocusableElements() {
+		if (!prefs) return [];
+		return Array.prototype.filter.call(prefs.querySelectorAll(focusableSelector), function (el) {
+			return !el.hidden && el.getAttribute('aria-hidden') !== 'true';
+		});
+	}
+
+	function setBackgroundInert(isInert) {
+		if (!prefs || !('inert' in HTMLElement.prototype)) return;
+
+		if (isInert) {
+			inertBackground = [];
+			Array.prototype.forEach.call(document.body.children, function (el) {
+				if (el === prefs || el.contains(prefs)) return;
+				inertBackground.push({ element: el, wasInert: el.inert });
+				el.inert = true;
+			});
+			return;
+		}
+
+		inertBackground.forEach(function (item) {
+			item.element.inert = item.wasInert;
+		});
+		inertBackground = [];
+	}
+
 	function openPrefs() {
 		if (!prefs) return;
+		if (!prefs.hidden) return;
+		prefsOpener = document.activeElement;
 		var saved = readConsent() || {};
 		CATS.forEach(function (c) {
 			var input = prefs.querySelector('input[data-cat="' + c + '"]');
 			if (input) input.checked = !!saved[c];
 		});
 		prefs.hidden = false;
+		setBackgroundInert(true);
+		previousDocumentOverflow = document.documentElement.style.overflow;
 		document.documentElement.style.overflow = 'hidden';
 		var firstToggle = prefs.querySelector('input[data-cat]');
 		if (firstToggle) firstToggle.focus();
+		else prefs.focus();
 	}
 
 	function closePrefs() {
-		if (!prefs) return;
+		if (!prefs || prefs.hidden) return;
 		prefs.hidden = true;
-		document.documentElement.style.overflow = '';
+		setBackgroundInert(false);
+		document.documentElement.style.overflow = previousDocumentOverflow;
+		previousDocumentOverflow = '';
+		if (prefsOpener && prefsOpener.isConnected && typeof prefsOpener.focus === 'function') {
+			prefsOpener.focus({ preventScroll: true });
+		}
+		prefsOpener = null;
 	}
 
 	function decide(type) {
@@ -149,7 +190,35 @@
 	}
 
 	document.addEventListener('keydown', function (e) {
-		if (e.key === 'Escape' && prefs && !prefs.hidden) closePrefs();
+		if (!prefs || prefs.hidden) return;
+
+		if (e.key === 'Escape') {
+			closePrefs();
+			return;
+		}
+
+		if (e.key !== 'Tab') return;
+
+		var focusable = getPrefsFocusableElements();
+		if (!focusable.length) {
+			e.preventDefault();
+			prefs.focus();
+			return;
+		}
+
+		var first = focusable[0];
+		var last = focusable[focusable.length - 1];
+		var active = document.activeElement;
+		if (active === first && e.shiftKey) {
+			e.preventDefault();
+			last.focus();
+		} else if (active === last && !e.shiftKey) {
+			e.preventDefault();
+			first.focus();
+		} else if (!prefs.contains(active)) {
+			e.preventDefault();
+			(e.shiftKey ? last : first).focus();
+		}
 	});
 
 	/* ---------------- Veřejné API ---------------- */
