@@ -23,6 +23,7 @@ define( 'FUTURI_COOKIES_OPT', 'futuri_cookies_settings' );
 define( 'FUTURI_COOKIES_COOKIE', 'futuri_cookie_consent' );
 define( 'FUTURI_COOKIES_CONSENT_RATE_LIMIT', 10 );
 define( 'FUTURI_COOKIES_CONSENT_RATE_PERIOD', 3600 );
+define( 'FUTURI_COOKIES_LOG_CLEANUP_HOOK', 'futuri_cookies_delete_expired_logs' );
 
 require_once FUTURI_COOKIES_PATH . 'includes/settings.php';
 
@@ -38,6 +39,8 @@ function futuri_cookies_default_settings() {
 		'expiry'          => 365,              // platnost souhlasu ve dnech
 		'privacy_url'     => '',
 		'log_consents'    => 1,
+		// Consent records are automatically deleted after this period.
+		'log_retention_days' => 365,
 		'consent_mode'    => 1,                // Google Consent Mode v2
 		'float_button'    => 1,
 		'float_label'     => 'Cookies',
@@ -101,6 +104,17 @@ function futuri_cookies_activate() {
 	if ( false === get_option( FUTURI_COOKIES_OPT ) ) {
 		add_option( FUTURI_COOKIES_OPT, futuri_cookies_default_settings() );
 	}
+	if ( ! wp_next_scheduled( FUTURI_COOKIES_LOG_CLEANUP_HOOK ) ) {
+		wp_schedule_event( time(), 'daily', FUTURI_COOKIES_LOG_CLEANUP_HOOK );
+	}
+}
+
+register_deactivation_hook( __FILE__, 'futuri_cookies_deactivate' );
+function futuri_cookies_deactivate() {
+	$timestamp = wp_next_scheduled( FUTURI_COOKIES_LOG_CLEANUP_HOOK );
+	if ( $timestamp ) {
+		wp_unschedule_event( $timestamp, FUTURI_COOKIES_LOG_CLEANUP_HOOK );
+	}
 }
 
 function futuri_cookies_create_log_table() {
@@ -121,6 +135,18 @@ function futuri_cookies_create_log_table() {
 
 	require_once ABSPATH . 'wp-admin/includes/upgrade.php';
 	dbDelta( $sql );
+}
+
+/** Deletes consent records that have exceeded the configured retention period. */
+add_action( FUTURI_COOKIES_LOG_CLEANUP_HOOK, 'futuri_cookies_delete_expired_logs' );
+function futuri_cookies_delete_expired_logs() {
+	global $wpdb;
+
+	$retention_days = max( 1, min( 3650, (int) futuri_cookies_get( 'log_retention_days' ) ) );
+	$cutoff         = wp_date( 'Y-m-d H:i:s', current_time( 'timestamp' ) - ( $retention_days * DAY_IN_SECONDS ) );
+	$table          = $wpdb->prefix . 'futuri_consent_log';
+
+	$wpdb->query( $wpdb->prepare( "DELETE FROM {$table} WHERE created_at < %s", $cutoff ) ); // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- table name uses the WP prefix.
 }
 
 /* ------------------------------------------------------------------------- *
@@ -285,7 +311,7 @@ gtag('consent','default',{
   var c=JSON.parse(decodeURIComponent(m[1]));
   var expectedVersion=<?php echo wp_json_encode( FUTURI_COOKIES_VERSION ); ?>;
   // Stejně jako banner.js ignorujeme souhlas uložený starší verzí pluginu.
-  if(!c||typeof c!=='object'||Array.isArray(c)||c.v!==expectedVersion)return;
+  if(!c||typeof c!=='object'||Array.isArray(c)||c.v!==expectedVersion||typeof c.necessary!=='boolean'||c.necessary!==true||typeof c.functional!=='boolean'||typeof c.analytics!=='boolean'||typeof c.marketing!=='boolean')return;
   gtag('consent','update',{
     'analytics_storage':c.analytics?'granted':'denied',
     'ad_storage':c.marketing?'granted':'denied',

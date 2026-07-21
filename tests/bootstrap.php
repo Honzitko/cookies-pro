@@ -20,6 +20,7 @@ function plugin_dir_url( $file ) {
 function add_action() {}
 function add_shortcode() {}
 function register_activation_hook() {}
+function register_deactivation_hook() {}
 
 function esc_attr( $value ) {
 	return htmlspecialchars( $value, ENT_QUOTES, 'UTF-8' );
