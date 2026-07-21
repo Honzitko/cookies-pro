@@ -268,8 +268,13 @@ function futuri_cookies_settings_page() {
 			<div id="fc-tab-scripts" class="fc-tab-panel" style="display:none">
 				<p class="description" style="max-width:760px">
 					Sem vložte kód sledovacích/reklamních služeb (např. Facebook Pixel, Sklik, Hotjar).
-					Každá položka se načte teprve po udělení souhlasu s příslušnou kategorií.
-					<strong>Google Analytics / Ads</strong> přes Consent Mode v2 sem vkládat nemusíte — stačí je načíst běžně a plugin je pohlídá.
+					Každou zde uloženou položku plugin automaticky označí jako blokovanou a aktivuje ji
+					až po udělení souhlasu s příslušnou kategorií. Skripty vložené jiným pluginem nebo
+					šablonou plugin automaticky neblokuje: jejich autor je musí označit
+					<code>type="text/plain"</code> a <code>data-cookiecategory</code>; u externího
+					skriptu musí použít <code>data-src</code> místo <code>src</code>.
+					<strong>Google Analytics / Ads:</strong> Consent Mode v2 nastavuje stav souhlasu pro
+					Google tagy, ale není univerzálním blokátorem externích skriptů.
 				</p>
 				<div id="fc-scripts">
 					<?php
