@@ -240,8 +240,13 @@
 .fc-float[hidden] { display: none; }
 .fc-float:hover { transform: translateY(-2px); }
 .fc-float.fc-pos-bottom-left  { left: 20px; bottom: 20px; }
-.fc-float.fc-pos-bottom-right,
-.fc-float.fc-pos-bottom-center { right: 20px; bottom: 20px; }
+.fc-float.fc-pos-bottom-right { right: 20px; bottom: 20px; }
+.fc-float.fc-pos-bottom-center {
+	left: 50%;
+	bottom: 20px;
+	transform: translateX(-50%);
+}
+.fc-float.fc-pos-bottom-center:hover { transform: translate(-50%, -2px); }
 
 /* ---------------- Animace + přístupnost ---------------- */
 @keyframes fc-rise { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
@@ -262,6 +267,14 @@
 	.fc-banner { width: calc(100% - 24px); }
 	.fc-pos-bottom-left, .fc-pos-bottom-right { left: 12px; right: 12px; bottom: 12px; }
 	.fc-pos-bottom-center { left: 12px; right: 12px; transform: none; }
+	.fc-float.fc-pos-bottom-left { left: 12px; right: auto; bottom: 12px; }
+	.fc-float.fc-pos-bottom-right { right: 12px; left: auto; bottom: 12px; }
+	.fc-float.fc-pos-bottom-center {
+		left: 50%;
+		right: auto;
+		bottom: 12px;
+		transform: translateX(-50%);
+	}
 	.fc-actions .fc-btn,
 	.fc-prefs-actions .fc-btn { flex: 1 1 100%; }
 }
