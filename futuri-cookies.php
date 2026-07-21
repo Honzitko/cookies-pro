@@ -208,7 +208,11 @@ gtag('consent','default',{
 });
 (function(){try{
   var m=document.cookie.match(/(?:^|;\s*)<?php echo esc_js( FUTURI_COOKIES_COOKIE ); ?>=([^;]+)/);
-  if(!m)return;var c=JSON.parse(decodeURIComponent(m[1]));
+  if(!m)return;
+  var c=JSON.parse(decodeURIComponent(m[1]));
+  var expectedVersion=<?php echo wp_json_encode( FUTURI_COOKIES_VERSION ); ?>;
+  // Stejně jako banner.js ignorujeme souhlas uložený starší verzí pluginu.
+  if(!c||typeof c!=='object'||Array.isArray(c)||c.v!==expectedVersion)return;
   gtag('consent','update',{
     'analytics_storage':c.analytics?'granted':'denied',
     'ad_storage':c.marketing?'granted':'denied',
