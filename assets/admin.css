@@ -1,0 +1,22 @@
+/* futuri Cookies — styl administrace */
+.fc-admin .fc-tab-panel { background: #fff; border: 1px solid #ccd0d4; border-top: none; padding: 8px 20px 16px; }
+.fc-admin .nav-tab-wrapper.fc-tabs { margin-bottom: 0; }
+
+.fc-script-row {
+	background: #f6f7f7;
+	border: 1px solid #dcdcde;
+	border-radius: 6px;
+	padding: 12px;
+	margin-bottom: 12px;
+}
+.fc-script-top {
+	display: flex;
+	gap: 8px;
+	flex-wrap: wrap;
+	align-items: center;
+	margin-bottom: 8px;
+}
+.fc-script-top .regular-text { flex: 1 1 240px; }
+.fc-script-remove { margin-left: auto; color: #b32d2e; }
+
+.fc-color { }

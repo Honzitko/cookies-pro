@@ -1,0 +1,274 @@
+/* futuri Cookies — frontend styl
+   Barvy jsou řízené proměnnými z nastavení (viz wp_add_inline_style).
+   Fonty se needěděně nenačítají z CDN kvůli GDPR — použije se DM font,
+   pokud ho už načítá téma, jinak systémový fallback. */
+
+.fc-banner,
+.fc-prefs,
+.fc-float {
+	--fc-font: 'DM Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+	--fc-serif: 'DM Serif Display', Georgia, 'Times New Roman', serif;
+	box-sizing: border-box;
+}
+.fc-banner *,
+.fc-prefs *,
+.fc-float * { box-sizing: border-box; }
+
+/* ---------------- Lišta (1. vrstva) ---------------- */
+.fc-banner {
+	position: fixed;
+	z-index: 999999;
+	max-width: 460px;
+	width: calc(100% - 40px);
+	background: var(--fc-bg);
+	color: var(--fc-text);
+	border: 1px solid var(--fc-border);
+	border-radius: var(--fc-radius);
+	box-shadow: 0 12px 44px rgba(0, 0, 0, 0.16);
+	font-family: var(--fc-font);
+	font-size: 14px;
+	line-height: 1.6;
+	animation: fc-rise 0.35s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+.fc-banner[hidden] { display: none; }
+.fc-inner { padding: 22px 24px 20px; }
+
+.fc-pos-bottom-left  { left: 20px; bottom: 20px; }
+.fc-pos-bottom-right { right: 20px; bottom: 20px; }
+.fc-pos-bottom-center{ left: 50%; bottom: 20px; transform: translateX(-50%); }
+
+/* Layout "bar" — přes celou šířku dole */
+.fc-layout-bar {
+	max-width: none;
+	width: 100%;
+	left: 0; right: 0; bottom: 0;
+	border-radius: 0;
+	border-left: 0; border-right: 0; border-bottom: 0;
+	transform: none;
+}
+.fc-layout-bar .fc-inner {
+	max-width: 1180px;
+	margin: 0 auto;
+	display: flex;
+	align-items: center;
+	gap: 24px;
+	flex-wrap: wrap;
+}
+.fc-layout-bar .fc-head { margin-bottom: 4px; }
+.fc-layout-bar .fc-message { flex: 1 1 340px; margin: 0; }
+.fc-layout-bar .fc-actions { margin-top: 0; }
+
+.fc-head {
+	display: flex;
+	align-items: center;
+	gap: 9px;
+	margin-bottom: 8px;
+}
+.fc-sprout { flex: 0 0 auto; }
+.fc-title {
+	font-family: var(--fc-serif);
+	font-weight: 400;
+	font-size: 20px;
+	line-height: 1.2;
+	color: var(--fc-heading);
+	margin: 0;
+}
+.fc-message { margin: 0 0 16px; }
+.fc-link {
+	color: var(--fc-accent);
+	text-decoration: underline;
+	text-underline-offset: 2px;
+	white-space: nowrap;
+}
+.fc-link:hover { text-decoration: none; }
+
+/* ---------------- Tlačítka ---------------- */
+.fc-actions,
+.fc-prefs-actions {
+	display: flex;
+	gap: 10px;
+	flex-wrap: wrap;
+}
+.fc-btn {
+	font-family: var(--fc-font);
+	font-size: 14px;
+	font-weight: 600;
+	line-height: 1;
+	padding: 11px 18px;
+	border-radius: 10px;
+	border: 1.5px solid var(--fc-primary);
+	cursor: pointer;
+	transition: transform 0.12s ease, opacity 0.12s ease, background 0.12s ease;
+	flex: 1 1 auto;
+	white-space: nowrap;
+}
+.fc-btn:hover { transform: translateY(-1px); }
+.fc-btn:active { transform: translateY(0); }
+
+/* Přijmout i Odmítnout jsou vizuálně ROVNOCENNÁ (stejná plná varianta) —
+   to je požadavek české i EU úpravy: odmítnutí musí být stejně snadné jako souhlas. */
+.fc-btn-solid {
+	background: var(--fc-primary);
+	color: var(--fc-primary-text);
+}
+.fc-btn-solid:hover { opacity: 0.92; }
+
+/* Nastavit = terciární, tišší (nesnižuje prominenci odmítnutí, jen otevírá detail) */
+.fc-btn-ghost {
+	background: transparent;
+	color: var(--fc-primary);
+}
+.fc-btn-ghost:hover { background: rgba(0, 0, 0, 0.04); }
+
+/* ---------------- Panel nastavení (2. vrstva) ---------------- */
+.fc-prefs {
+	position: fixed;
+	inset: 0;
+	z-index: 1000000;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	font-family: var(--fc-font);
+}
+.fc-prefs[hidden] { display: none; }
+.fc-prefs-backdrop {
+	position: absolute;
+	inset: 0;
+	background: rgba(20, 24, 20, 0.5);
+	animation: fc-fade 0.25s ease both;
+}
+.fc-prefs-panel {
+	position: relative;
+	background: var(--fc-bg);
+	color: var(--fc-text);
+	width: min(520px, calc(100% - 32px));
+	max-height: min(84vh, 720px);
+	overflow-y: auto;
+	border-radius: var(--fc-radius);
+	padding: 28px 28px 24px;
+	box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+	animation: fc-rise 0.3s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+.fc-prefs-close {
+	position: absolute;
+	top: 14px; right: 16px;
+	background: none;
+	border: none;
+	font-size: 28px;
+	line-height: 1;
+	color: var(--fc-text);
+	opacity: 0.5;
+	cursor: pointer;
+}
+.fc-prefs-close:hover { opacity: 1; }
+.fc-prefs-title {
+	font-family: var(--fc-serif);
+	font-weight: 400;
+	font-size: 24px;
+	color: var(--fc-heading);
+	margin: 0 0 6px;
+}
+.fc-prefs-intro { font-size: 14px; line-height: 1.6; margin: 0 0 18px; }
+
+.fc-cat {
+	border-top: 1px solid var(--fc-border);
+	padding: 15px 0;
+}
+.fc-cat-head {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 12px;
+}
+.fc-cat-name { font-weight: 700; font-size: 15px; color: var(--fc-heading); }
+.fc-cat-always {
+	font-size: 12px;
+	font-weight: 600;
+	color: var(--fc-accent);
+	opacity: 0.85;
+}
+.fc-cat-desc { font-size: 13px; line-height: 1.55; margin: 6px 0 0; opacity: 0.9; }
+
+.fc-prefs-actions {
+	margin-top: 22px;
+	padding-top: 18px;
+	border-top: 1px solid var(--fc-border);
+}
+
+/* ---------------- Přepínač (switch) ---------------- */
+.fc-switch { position: relative; display: inline-block; width: 46px; height: 26px; flex: 0 0 auto; }
+.fc-switch input { opacity: 0; width: 0; height: 0; }
+.fc-slider {
+	position: absolute;
+	inset: 0;
+	background: #C9C4BA;
+	border-radius: 26px;
+	transition: background 0.2s ease;
+}
+.fc-slider::before {
+	content: '';
+	position: absolute;
+	height: 20px; width: 20px;
+	left: 3px; top: 3px;
+	background: #fff;
+	border-radius: 50%;
+	transition: transform 0.2s ease;
+	box-shadow: 0 1px 3px rgba(0, 0, 0, 0.25);
+}
+.fc-switch input:checked + .fc-slider { background: var(--fc-accent); }
+.fc-switch input:checked + .fc-slider::before { transform: translateX(20px); }
+
+/* ---------------- Plovoucí tlačítko (znovuotevření) ---------------- */
+.fc-float {
+	position: fixed;
+	z-index: 999998;
+	display: inline-flex;
+	align-items: center;
+	gap: 7px;
+	padding: 9px 14px;
+	background: var(--fc-primary);
+	color: var(--fc-primary-text);
+	border: none;
+	border-radius: 999px;
+	font-family: var(--fc-font);
+	font-size: 13px;
+	font-weight: 600;
+	cursor: pointer;
+	box-shadow: 0 6px 20px rgba(0, 0, 0, 0.22);
+	transition: transform 0.15s ease, opacity 0.15s ease;
+}
+.fc-float[hidden] { display: none; }
+.fc-float:hover { transform: translateY(-2px); }
+.fc-float.fc-pos-bottom-left  { left: 20px; bottom: 20px; }
+.fc-float.fc-pos-bottom-right,
+.fc-float.fc-pos-bottom-center { right: 20px; bottom: 20px; }
+
+/* ---------------- Animace + přístupnost ---------------- */
+@keyframes fc-rise { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes fc-fade { from { opacity: 0; } to { opacity: 1; } }
+
+.fc-layout-bar.fc-banner { animation: fc-fade 0.3s ease both; }
+
+.fc-btn:focus-visible,
+.fc-switch input:focus-visible + .fc-slider,
+.fc-float:focus-visible,
+.fc-link:focus-visible,
+.fc-prefs-close:focus-visible {
+	outline: 3px solid var(--fc-accent);
+	outline-offset: 2px;
+}
+
+@media (max-width: 520px) {
+	.fc-banner { width: calc(100% - 24px); }
+	.fc-pos-bottom-left, .fc-pos-bottom-right { left: 12px; right: 12px; bottom: 12px; }
+	.fc-pos-bottom-center { left: 12px; right: 12px; transform: none; }
+	.fc-actions .fc-btn,
+	.fc-prefs-actions .fc-btn { flex: 1 1 100%; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.fc-banner, .fc-prefs-panel, .fc-prefs-backdrop, .fc-float, .fc-btn, .fc-slider, .fc-slider::before {
+		animation: none !important;
+		transition: none !important;
+	}
+}
