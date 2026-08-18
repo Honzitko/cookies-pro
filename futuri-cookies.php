@@ -371,7 +371,7 @@ function futuri_cookies_assets() {
 /* ------------------------------------------------------------------------- *
  *  <footer>: HTML lišty + panelu + plovoucí tlačítko + zablokované body skripty
  * ------------------------------------------------------------------------- */
-add_action( 'wp_footer', 'futuri_cookies_footer', 100 );
+add_action( 'wp_footer', 'futuri_cookies_footer', 5 );
 function futuri_cookies_footer() {
 	if ( ! futuri_cookies_get( 'enabled' ) ) {
 		return;
